@@ -6,9 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
+    body {
       font-family: "Microsoft JhengHei", -apple-system, "Segoe UI", Arial, sans-serif;
-      background: #f0f2f5; 
+      background: #f0f2f5;
       padding: 0;
       font-size: 14px;
     }
@@ -19,17 +19,17 @@
       text-align: center;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
-    h1 { 
-      font-size: 1.6em; 
+    h1 {
+      font-size: 1.6em;
       margin-bottom: 8px;
       text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    .date { 
-      font-size: 0.95em; 
+    .date {
+      font-size: 0.95em;
       opacity: 0.95;
       letter-spacing: 0.5px;
     }
-    
+
     .legend {
       display: flex;
       justify-content: center;
@@ -51,36 +51,52 @@
       border-radius: 4px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
-    
+
+    /* 外層：固定時間欄 + 可橫向捲動的行程 */
     .schedule-wrapper {
-      overflow-x: auto;
-      background: white;
-      padding: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .schedule {
-      display: grid;
-      grid-template-columns: 55px repeat(4, 1fr);
-      min-width: 800px;
-      background: white;
       position: relative;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      width: 100%;
     }
-    
-    .time-col {
-      border-right: 2px solid #dee2e6;
+
+    /* 左側固定時間欄 */
+    .time-sticky {
+      position: sticky;
+      left: 0;
+      top: 0;
+      z-index: 20;
       background: linear-gradient(to right, #f8f9fa, #ffffff);
+      border-right: 2px solid #dee2e6;
     }
-    .time-label {
+    .time-sticky .time-label {
+      width: 55px;
       height: 60px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 0.85em;
       color: #495057;
-      font-weight: 500;
       border-bottom: 1px solid #f0f0f0;
+      font-weight: 500;
     }
-    
+
+    /* 右側可左右捲動的行程區 */
+    .schedule-scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+      flex: 1;
+    }
+
+    .schedule {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      min-width: 745px;
+      background: white;
+      position: relative;
+    }
+
     .day-header {
       padding: 16px 8px;
       text-align: center;
@@ -90,24 +106,24 @@
       font-size: 0.95em;
       color: #495057;
     }
-    
+
     .day-col {
       position: relative;
       border-right: 1px solid #e9ecef;
-      background: 
+      background:
         linear-gradient(to bottom, #f8f9fa 0px, #f8f9fa 1px, transparent 1px);
       background-size: 100% 60px;
     }
     .day-col:last-child {
       border-right: none;
     }
-    
+
     .slot {
       height: 60px;
       position: relative;
       pointer-events: none;
     }
-    
+
     .activity {
       position: absolute;
       left: 6px;
@@ -136,25 +152,25 @@
       opacity: 0.95;
       font-weight: 500;
     }
-    
-    .type-spot { 
-      background: linear-gradient(135deg, #5DADE2 0%, #4A9CD6 100%); 
-      color: white; 
+
+    .type-spot {
+      background: linear-gradient(135deg, #5DADE2 0%, #4A9CD6 100%);
+      color: white;
     }
-    .type-hotel { 
-      background: linear-gradient(135deg, #AF7AC5 0%, #9B6BB0 100%); 
-      color: white; 
+    .type-hotel {
+      background: linear-gradient(135deg, #AF7AC5 0%, #9B6BB0 100%);
+      color: white;
     }
-    .type-meal { 
-      background: linear-gradient(135deg, #F4D03F 0%, #E8C532 100%); 
+    .type-meal {
+      background: linear-gradient(135deg, #F4D03F 0%, #E8C532 100%);
       color: #2c3e50;
       font-weight: 600;
     }
-    .type-transport { 
-      background: linear-gradient(135deg, #BDC3C7 0%, #95A5A6 100%); 
-      color: white; 
+    .type-transport {
+      background: linear-gradient(135deg, #BDC3C7 0%, #95A5A6 100%);
+      color: white;
     }
-    
+
     .footer {
       text-align: center;
       padding: 20px;
@@ -168,11 +184,8 @@
       color: #495057;
       margin-bottom: 4px;
     }
-    
+
     @media (max-width: 600px) {
-      .schedule-wrapper {
-        padding: 0;
-      }
       .schedule {
         min-width: 700px;
       }
@@ -207,307 +220,313 @@
   </div>
 
   <div class="schedule-wrapper">
-    <div class="schedule">
-      <!-- Header Row -->
-      <div class="time-col" style="border-bottom: 3px solid #667eea;"></div>
-      <div class="day-header">Day 1<br>(2/14)</div>
-      <div class="day-header">Day 2<br>(2/15)</div>
-      <div class="day-header">Day 3<br>(2/16)</div>
-      <div class="day-header">Day 4<br>(2/17)</div>
+    <!-- 左側固定時間欄 -->
+    <div class="time-sticky">
+      <div class="time-label">07:00</div>
+      <div class="time-label">08:00</div>
+      <div class="time-label">09:00</div>
+      <div class="time-label">10:00</div>
+      <div class="time-label">11:00</div>
+      <div class="time-label">12:00</div>
+      <div class="time-label">13:00</div>
+      <div class="time-label">14:00</div>
+      <div class="time-label">15:00</div>
+      <div class="time-label">16:00</div>
+      <div class="time-label">17:00</div>
+      <div class="time-label">18:00</div>
+      <div class="time-label">19:00</div>
+      <div class="time-label">20:00</div>
+      <div class="time-label">21:00</div>
+      <div class="time-label">22:00</div>
+    </div>
 
-      <!-- 07:00 -->
-      <div class="time-col"><div class="time-label">07:00</div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:30px; height:100px;">
-          <div class="activity-name">台中出發</div>
-          <div class="activity-time">07:30-09:10</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
+    <!-- 右側可左右拖移的行程區 -->
+    <div class="schedule-scroll">
+      <div class="schedule">
+        <!-- Header Row -->
+        <div class="day-header">Day 1<br>(2/14)</div>
+        <div class="day-header">Day 2<br>(2/15)</div>
+        <div class="day-header">Day 3<br>(2/16)</div>
+        <div class="day-header">Day 4<br>(2/17)</div>
 
-      <!-- 08:00 -->
-      <div class="time-col"><div class="time-label">08:00</div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-meal" style="top:0; height:60px;">
-          <div class="activity-name">飯店早餐</div>
-          <div class="activity-time">08:00-09:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-meal" style="top:30px; height:60px;">
-          <div class="activity-name">飯店早餐</div>
-          <div class="activity-time">08:30-09:30</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-meal" style="top:0; height:60px;">
-          <div class="activity-name">飯店早餐</div>
-          <div class="activity-time">08:00-09:00</div>
-        </div>
-      </div></div>
+        <!-- 07:00 -->
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:30px; height:100px;">
+            <div class="activity-name">台中出發</div>
+            <div class="activity-time">07:30-09:10</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
 
-      <!-- 09:00 -->
-      <div class="time-col"><div class="time-label">09:00</div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-spot" style="top:30px; height:150px;">
-          <div class="activity-name">頑皮世界</div>
-          <div class="activity-time">09:30-12:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:0; height:30px;">
-          <div class="activity-name" style="font-size:0.8em;">前往奇美</div>
-          <div class="activity-time" style="font-size:0.75em;">09:00-09:30</div>
-        </div>
-        <div class="activity type-spot" style="top:30px; height:150px;">
-          <div class="activity-name">奇美博物館</div>
-          <div class="activity-time">09:30-12:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:0; height:30px;">
-          <div class="activity-name" style="font-size:0.8em;">前往旗津</div>
-          <div class="activity-time" style="font-size:0.75em;">09:30-10:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:0; height:20px;">
-          <div class="activity-name" style="font-size:0.75em;">前往動物園</div>
-        </div>
-        <div class="activity type-spot" style="top:30px; height:180px;">
-          <div class="activity-name">壽山動物園</div>
-          <div class="activity-time">09:30-12:30</div>
-        </div>
-      </div></div>
+        <!-- 08:00 -->
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-meal" style="top:0; height:60px;">
+            <div class="activity-name">飯店早餐</div>
+            <div class="activity-time">08:00-09:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-meal" style="top:30px; height:60px;">
+            <div class="activity-name">飯店早餐</div>
+            <div class="activity-time">08:30-09:30</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-meal" style="top:0; height:60px;">
+            <div class="activity-name">飯店早餐</div>
+            <div class="activity-time">08:00-09:00</div>
+          </div>
+        </div></div>
 
-      <!-- 10:00 -->
-      <div class="time-col"><div class="time-label">10:00</div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-spot" style="top:0; height:180px;">
-          <div class="activity-name">旗津巡禮</div>
-          <div class="activity-time">10:00-13:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot"></div></div>
+        <!-- 09:00 -->
+        <div class="day-col"><div class="slot">
+          <div class="activity type-spot" style="top:30px; height:150px;">
+            <div class="activity-name">頑皮世界</div>
+            <div class="activity-time">09:30-12:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:0; height:30px;">
+            <div class="activity-name" style="font-size:0.8em;">前往奇美</div>
+            <div class="activity-time" style="font-size:0.75em;">09:00-09:30</div>
+          </div>
+          <div class="activity type-spot" style="top:30px; height:150px;">
+            <div class="activity-name">奇美博物館</div>
+            <div class="activity-time">09:30-12:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:0; height:30px;">
+            <div class="activity-name" style="font-size:0.8em;">前往旗津</div>
+            <div class="activity-time" style="font-size:0.75em;">09:30-10:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:0; height:20px;">
+            <div class="activity-name" style="font-size:0.75em;">前往動物園</div>
+          </div>
+          <div class="activity type-spot" style="top:30px; height:180px;">
+            <div class="activity-name">壽山動物園</div>
+            <div class="activity-time">09:30-12:30</div>
+          </div>
+        </div></div>
 
-      <!-- 11:00 -->
-      <div class="time-col"><div class="time-label">11:00</div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
+        <!-- 10:00 -->
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-spot" style="top:0; height:180px;">
+            <div class="activity-name">旗津巡禮</div>
+            <div class="activity-time">10:00-13:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot"></div></div>
 
-      <!-- 12:00 -->
-      <div class="time-col"><div class="time-label">12:00</div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-meal" style="top:0; height:60px;">
-          <div class="activity-name">午餐</div>
-          <div class="activity-time">12:00-13:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-meal" style="top:0; height:60px;">
-          <div class="activity-name">午餐</div>
-          <div class="activity-time">12:00-13:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-meal" style="top:30px; height:60px;">
-          <div class="activity-name">午餐</div>
-          <div class="activity-time">12:30-13:30</div>
-        </div>
-      </div></div>
+        <!-- 11:00 -->
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
 
-      <!-- 13:00 -->
-      <div class="time-col"><div class="time-label">13:00</div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:0; height:40px;">
-          <div class="activity-name" style="font-size:0.8em;">前往安平</div>
-          <div class="activity-time" style="font-size:0.75em;">13:00-13:40</div>
-        </div>
-        <div class="activity type-spot" style="top:40px; height:170px;">
-          <div class="activity-name">安平古堡+老街</div>
-          <div class="activity-time">13:40-16:30</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:0; height:50px;">
-          <div class="activity-name" style="font-size:0.8em;">前往義大</div>
-          <div class="activity-time" style="font-size:0.75em;">13:00-13:50</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-meal" style="top:0; height:60px;">
-          <div class="activity-name">午餐</div>
-          <div class="activity-time">13:00-14:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:0; height:50px;">
-          <div class="activity-name" style="font-size:0.8em;">前往台史博</div>
-          <div class="activity-time" style="font-size:0.75em;">13:30-14:20</div>
-        </div>
-      </div></div>
+        <!-- 12:00 -->
+        <div class="day-col"><div class="slot">
+          <div class="activity type-meal" style="top:0; height:60px;">
+            <div class="activity-name">午餐</div>
+            <div class="activity-time">12:00-13:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-meal" style="top:0; height:60px;">
+            <div class="activity-name">午餐</div>
+            <div class="activity-time">12:00-13:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-meal" style="top:30px; height:60px;">
+            <div class="activity-name">午餐</div>
+            <div class="activity-time">12:30-13:30</div>
+          </div>
+        </div></div>
 
-      <!-- 14:00 -->
-      <div class="time-col"><div class="time-label">14:00</div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-spot" style="top:0; height:240px;">
-          <div class="activity-name">義大遊樂世界</div>
-          <div class="activity-time">14:00-18:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:0; height:25px;">
-          <div class="activity-name" style="font-size:0.75em;">前往草衙道</div>
-        </div>
-        <div class="activity type-spot" style="top:30px; height:120px;">
-          <div class="activity-name">草衙道</div>
-          <div class="activity-time">14:30-16:30</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-spot" style="top:30px; height:180px;">
-          <div class="activity-name">台灣歷史博物館</div>
-          <div class="activity-time">14:30-17:30</div>
-        </div>
-      </div></div>
+        <!-- 13:00 -->
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:0; height:40px;">
+            <div class="activity-name" style="font-size:0.8em;">前往安平</div>
+            <div class="activity-time" style="font-size:0.75em;">13:00-13:40</div>
+          </div>
+          <div class="activity type-spot" style="top:40px; height:170px;">
+            <div class="activity-name">安平古堡+老街</div>
+            <div class="activity-time">13:40-16:30</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:0; height:50px;">
+            <div class="activity-name" style="font-size:0.8em;">前往義大</div>
+            <div class="activity-time" style="font-size:0.75em;">13:00-13:50</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-meal" style="top:0; height:60px;">
+            <div class="activity-name">午餐</div>
+            <div class="activity-time">13:00-14:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:0; height:50px;">
+            <div class="activity-name" style="font-size:0.8em;">前往台史博</div>
+            <div class="activity-time" style="font-size:0.75em;">13:30-14:20</div>
+          </div>
+        </div></div>
 
-      <!-- 15:00 -->
-      <div class="time-col"><div class="time-label">15:00</div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
+        <!-- 14:00 -->
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-spot" style="top:0; height:240px;">
+            <div class="activity-name">義大遊樂世界</div>
+            <div class="activity-time">14:00-18:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:0; height:25px;">
+            <div class="activity-name" style="font-size:0.75em;">前往草衙道</div>
+          </div>
+          <div class="activity type-spot" style="top:30px; height:120px;">
+            <div class="activity-name">草衙道</div>
+            <div class="activity-time">14:30-16:30</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-spot" style="top:30px; height:180px;">
+            <div class="activity-name">台灣歷史博物館</div>
+            <div class="activity-time">14:30-17:30</div>
+          </div>
+        </div></div>
 
-      <!-- 16:00 -->
-      <div class="time-col"><div class="time-label">16:00</div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:30px; height:30px;">
-          <div class="activity-name" style="font-size:0.8em;">前往飯店</div>
-          <div class="activity-time" style="font-size:0.75em;">16:30-17:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:30px; height:15px;">
-          <div class="activity-name" style="font-size:0.75em;">前往駁二</div>
-        </div>
-        <div class="activity type-spot" style="top:45px; height:120px;">
-          <div class="activity-name">駁二藝術特區</div>
-          <div class="activity-time">16:45-18:45</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot"></div></div>
+        <!-- 15:00 -->
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
 
-      <!-- 17:00 -->
-      <div class="time-col"><div class="time-label">17:00</div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-hotel" style="top:0; height:60px;">
-          <div class="activity-name">Check-in & 休息</div>
-          <div class="activity-time">17:00-18:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:30px; height:30px;">
-          <div class="activity-name" style="font-size:0.75em;">前往餐廳</div>
-        </div>
-      </div></div>
+        <!-- 16:00 -->
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:30px; height:30px;">
+            <div class="activity-name" style="font-size:0.8em;">前往飯店</div>
+            <div class="activity-time" style="font-size:0.75em;">16:30-17:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:30px; height:15px;">
+            <div class="activity-name" style="font-size:0.75em;">前往駁二</div>
+          </div>
+          <div class="activity type-spot" style="top:45px; height:120px;">
+            <div class="activity-name">駁二藝術特區</div>
+            <div class="activity-time">16:45-18:45</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot"></div></div>
 
-      <!-- 18:00 -->
-      <div class="time-col"><div class="time-label">18:00</div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-meal" style="top:0; height:120px;">
-          <div class="activity-name">飯店自助晚餐</div>
-          <div class="activity-time">18:00-20:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:0; height:30px;">
-          <div class="activity-name" style="font-size:0.75em;">前往飯店</div>
-        </div>
-        <div class="activity type-hotel" style="top:30px; height:30px;">
-          <div class="activity-name" style="font-size:0.8em;">Check-in</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:45px; height:15px;">
-          <div class="activity-name" style="font-size:0.75em;">前往飯店</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-meal" style="top:0; height:60px;">
-          <div class="activity-name">晚餐</div>
-          <div class="activity-time">18:00-19:00</div>
-        </div>
-      </div></div>
+        <!-- 17:00 -->
+        <div class="day-col"><div class="slot">
+          <div class="activity type-hotel" style="top:0; height:60px;">
+            <div class="activity-name">Check-in & 休息</div>
+            <div class="activity-time">17:00-18:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:30px; height:30px;">
+            <div class="activity-name" style="font-size:0.75em;">前往餐廳</div>
+          </div>
+        </div></div>
 
-      <!-- 19:00 -->
-      <div class="time-col"><div class="time-label">19:00</div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-meal" style="top:0; height:90px;">
-          <div class="activity-name">飯店自助晚餐</div>
-          <div class="activity-time">19:00-20:30</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-meal" style="top:0; height:120px;">
-          <div class="activity-name">Check-in & 晚餐</div>
-          <div class="activity-time">19:00-21:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-transport" style="top:0; height:120px;">
-          <div class="activity-name">返回台中</div>
-          <div class="activity-time">19:00-21:00</div>
-        </div>
-      </div></div>
+        <!-- 18:00 -->
+        <div class="day-col"><div class="slot">
+          <div class="activity type-meal" style="top:0; height:120px;">
+            <div class="activity-name">飯店自助晚餐</div>
+            <div class="activity-time">18:00-20:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:0; height:30px;">
+            <div class="activity-name" style="font-size:0.75em;">前往飯店</div>
+          </div>
+          <div class="activity type-hotel" style="top:30px; height:30px;">
+            <div class="activity-name" style="font-size:0.8em;">Check-in</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:45px; height:15px;">
+            <div class="activity-name" style="font-size:0.75em;">前往飯店</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-meal" style="top:0; height:60px;">
+            <div class="activity-name">晚餐</div>
+            <div class="activity-time">18:00-19:00</div>
+          </div>
+        </div></div>
 
-      <!-- 20:00 -->
-      <div class="time-col"><div class="time-label">20:00</div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-hotel" style="top:0; height:120px;">
-          <div class="activity-name">福爾摩沙遊艇酒店</div>
-          <div class="activity-time">20:00-22:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-hotel" style="top:30px; height:90px;">
-          <div class="activity-name">義大皇家酒店</div>
-          <div class="activity-time">20:30-22:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
+        <!-- 19:00 -->
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-meal" style="top:0; height:90px;">
+            <div class="activity-name">飯店自助晚餐</div>
+            <div class="activity-time">19:00-20:30</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-meal" style="top:0; height:120px;">
+            <div class="activity-name">Check-in & 晚餐</div>
+            <div class="activity-time">19:00-21:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-transport" style="top:0; height:120px;">
+            <div class="activity-name">返回台中</div>
+            <div class="activity-time">19:00-21:00</div>
+          </div>
+        </div></div>
 
-      <!-- 21:00 -->
-      <div class="time-col"><div class="time-label">21:00</div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot">
-        <div class="activity type-hotel" style="top:0; height:60px;">
-          <div class="activity-name">高雄福容大飯店</div>
-          <div class="activity-time">21:00-22:00</div>
-        </div>
-      </div></div>
-      <div class="day-col"><div class="slot"></div></div>
+        <!-- 20:00 -->
+        <div class="day-col"><div class="slot">
+          <div class="activity type-hotel" style="top:0; height:120px;">
+            <div class="activity-name">福爾摩沙遊艇酒店</div>
+            <div class="activity-time">20:00-22:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-hotel" style="top:30px; height:90px;">
+            <div class="activity-name">義大皇家酒店</div>
+            <div class="activity-time">20:30-22:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
 
-      <!-- 22:00 -->
-      <div class="time-col"><div class="time-label">22:00</div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
-      <div class="day-col"><div class="slot"></div></div>
+        <!-- 21:00 -->
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot">
+          <div class="activity type-hotel" style="top:0; height:60px;">
+            <div class="activity-name">高雄福容大飯店</div>
+            <div class="activity-time">21:00-22:00</div>
+          </div>
+        </div></div>
+        <div class="day-col"><div class="slot"></div></div>
+
+        <!-- 22:00 -->
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
+        <div class="day-col"><div class="slot"></div></div>
+      </div>
     </div>
   </div>
 
